@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rishi.ai</title>
+
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #111;
+  --primary: #6c63ff;
+}
+
+body.dark {
+  --bg: #0f0f0f;
+  --text: #fff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+}
+
+.messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.input-box {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+button {
+  margin-left: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+}
+
+.message { margin: 5px 0; }
+.user { text-align: right; }
+.ai { text-align: left; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar"></div>
+
+<div class="chat-container">
+  <div class="header">
+    <h2>rishi.ai</h2>
+    <div>
+      <button onclick="toggleTheme()">🌙</button>
+      <button onclick="newChat()">New</button>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-box">
+    <input id="input" placeholder="Ask something..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+let chats = JSON.parse(localStorage.getItem('chats')) || [];
+let currentChat = [];
+
+function saveChats() {
+  localStorage.setItem('chats', JSON.stringify(chats));
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+
+  chats.forEach((chat, i) => {
+    const div = document.createElement('div');
+    div.innerText = chat[0]?.text?.slice(0, 20) || 'New Chat';
+    div.style.cursor = 'pointer';
+    div.onclick = () => loadChat(i);
+    sidebar.appendChild(div);
+  });
+}
+
+function renderMessages() {
+  const messages = document.getElementById('messages');
+  messages.innerHTML = '';
+
+  currentChat.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'message ' + msg.role;
+    div.innerText = msg.text;
+    messages.appendChild(div);
+  });
+
+  messages.scrollTop = messages.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  currentChat.push({ role: 'user', text });
+  renderMessages();
+  input.value = '';
+
+  const aiMsg = { role: 'ai', text: 'Typing...' };
+  currentChat.push(aiMsg);
+  renderMessages();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await res.json();
+    aiMsg.text = data.reply;
+
+  } catch (err) {
+    aiMsg.text = 'Error: ' + err.message;
+  }
+
+  chats.push([...currentChat]);
+  saveChats();
+  renderSidebar();
+  renderMessages();
+}
+
+function newChat() {
+  currentChat = [];
+  renderMessages();
+}
+
+function loadChat(i) {
+  currentChat = chats[i];
+  renderMessages();
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+}
+
+renderSidebar();
+</script>
+
+</body>
+</html>
