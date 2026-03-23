@@ -1,85 +1,74 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rishi AI</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="brand">
-          <div class="brand-mark">R</div>
-          <div>
-            <h1>Rishi AI</h1>
-            <p>Elegant black chat experience</p>
-          </div>
-        </div>
-        <button class="icon-btn mobile-close" id="closeSidebarBtn" aria-label="Close sidebar">✕</button>
-      </div>
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+  <title>Rishi AI</title>  
+  <link rel="stylesheet" href="style.css" />  
+</head>  
+<body>  
+  <div class="app-shell">  
+    <aside class="sidebar" id="sidebar">  
+      <div class="sidebar-header">  
+        <div class="brand">  
+          <div class="brand-mark">R</div>  
+          <div>  
+            <h1>Rishi AI</h1>  
+            <p>Elegant black chat experience</p>  
+          </div>  
+        </div>  
+        <button class="icon-btn mobile-close" id="closeSidebarBtn" aria-label="Close sidebar">✕</button>  
+      </div>  <button class="primary-btn new-chat-btn" id="newChatBtn">+ New chat</button>  
 
-      <button class="primary-btn new-chat-btn" id="newChatBtn">+ New chat</button>
+  <div class="sidebar-section">  
+    <div class="section-label">Chats</div>  
+    <div id="chatList" class="chat-list"></div>  
+  </div>  
 
-      <div class="sidebar-section">
-        <div class="section-label">Chats</div>
-        <div id="chatList" class="chat-list"></div>
-      </div>
+  <div class="sidebar-footer">  
+    <span class="dot"></span>  
+    <span>Ready to chat</span>  
+  </div>  
+</aside>  
 
-      <div class="sidebar-footer">
-        <span class="dot"></span>
-        <span>Ready to chat</span>
-      </div>
-    </aside>
+<main class="main">  
+  <header class="topbar">  
+    <button class="icon-btn menu-btn" id="openSidebarBtn" aria-label="Open sidebar">☰</button>  
+    <div class="topbar-title">  
+      <h2>Rishi AI</h2>  
+      <p>Clean, fast, and minimal</p>  
+    </div>  
+    <button class="ghost-btn" id="clearAllBtn">Clear all</button>  
+  </header>  
 
-    <main class="main">
-      <header class="topbar">
-        <button class="icon-btn menu-btn" id="openSidebarBtn" aria-label="Open sidebar">☰</button>
+  <section class="chat-wrap">  
+    <div id="welcome" class="welcome">  
+      <div class="welcome-card">  
+        <div class="welcome-badge">Personalized UI</div>  
+        <h3>Ask anything with a premium black theme.</h3>  
+        <p>Fast replies, smooth history, and a polished interface built for Vercel.</p>  
+      </div>  
+    </div>  
 
-        <div class="topbar-title">
-          <h2>Rishi AI</h2>
-          <p>Clean, fast, and minimal</p>
-        </div>
+    <div id="chatContainer" class="chat-container" aria-live="polite"></div>  
 
-        <!-- 🔊 NEW VOICE TOGGLE BUTTON -->
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button id="voiceToggle" class="ghost-btn">VC:OFF</button>
-          <button class="ghost-btn" id="clearAllBtn">Clear all</button>
-        </div>
-      </header>
+    <div id="typing" class="typing hidden" aria-hidden="true">  
+      <span></span><span></span><span></span>  
+    </div>  
+  </section>  
 
-      <section class="chat-wrap">
-        <div id="welcome" class="welcome">
-          <div class="welcome-card">
-            <div class="welcome-badge">Personalized UI</div>
-            <h3>Ask anything with a premium black theme.</h3>
-            <p>Fast replies, smooth history, and a polished interface built for Vercel.</p>
-          </div>
-        </div>
+  <footer class="composer-shell">  
+    <div class="composer">  
+      <textarea  
+        id="userInput"  
+        rows="1"  
+        placeholder="Message Rishi AI..."  
+        spellcheck="false"  
+      ></textarea>  
+      <button id="sendBtn" class="send-btn" aria-label="Send message">➤</button>  
+    </div>  
+    <p class="composer-hint">Enter to send • Shift + Enter for a new line</p>  
+  </footer>  
+</main>
 
-        <div id="chatContainer" class="chat-container" aria-live="polite"></div>
-
-        <div id="typing" class="typing hidden" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-      </section>
-
-      <footer class="composer-shell">
-        <div class="composer">
-          <textarea
-            id="userInput"
-            rows="1"
-            placeholder="Message Rishi AI..."
-            spellcheck="false"
-          ></textarea>
-          <button id="sendBtn" class="send-btn" aria-label="Send message">➤</button>
-        </div>
-        <p class="composer-hint">Enter to send • Shift + Enter for a new line</p>
-      </footer>
-    </main>
-  </div>
-
-  <script type="module" src="script.js"></script>
-</body>
+  </div>    <script type="module" src="script.js"></script>  </body>  
 </html>
