@@ -5,393 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>rishi.ai</title>
 
+<link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<style>
-
-/* ========================= */
-/* ROOT */
-/* ========================= */
-
-:root {
-  --bg: #0a0a0f;
-  --panel: rgba(255,255,255,0.04);
-  --glass: rgba(255,255,255,0.06);
-  --text: #eaeaf0;
-  --muted: #888;
-  --primary: #7c5cff;
-}
-
-body.light {
-  --bg: #f5f6fb;
-  --panel: rgba(0,0,0,0.05);
-  --glass: rgba(0,0,0,0.08);
-  --text: #111;
-  --muted: #666;
-}
-
-/* ========================= */
-/* GLOBAL */
-/* ========================= */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* ========================= */
-/* SIDEBAR */
-/* ========================= */
-
-.sidebar {
-  width: 280px;
-  backdrop-filter: blur(20px);
-  background: var(--panel);
-  border-right: 1px solid rgba(255,255,255,0.05);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  transition: 0.3s;
-}
-
-.logo {
-  font-size: 22px;
-  color: var(--primary);
-  margin-bottom: 15px;
-}
-
-.search {
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 10px;
-  background: var(--glass);
-  color: var(--text);
-}
-
-.new-chat {
-  padding: 12px;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary);
-  color: white;
-  cursor: pointer;
-  margin-bottom: 15px;
-}
-
-.chat-item {
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 6px;
-  cursor: pointer;
-  color: var(--muted);
-  display: flex;
-  justify-content: space-between;
-}
-
-.chat-item:hover {
-  background: rgba(124,92,255,0.1);
-  color: var(--text);
-}
-
-.chat-actions {
-  display: none;
-}
-
-.chat-item:hover .chat-actions {
-  display: block;
-}
-
-/* ========================= */
-/* MAIN */
-/* ========================= */
-
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.header {
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-}
-
-/* ========================= */
-/* MESSAGES */
-/* ========================= */
-
-.messages {
-  flex: 1;
-  padding: 25px;
-  overflow-y: auto;
-}
-
-.message {
-  max-width: 65%;
-  padding: 14px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  line-height: 1.6;
-}
-
-.user {
-  background: linear-gradient(135deg,#7c5cff,#5a3fff);
-  color: white;
-  margin-left: auto;
-}
-
-.ai {
-  background: var(--glass);
-}
-
-/* ========================= */
-/* INPUT */
-/* ========================= */
-
-.input-area {
-  display: flex;
-  padding: 15px;
-  gap: 10px;
-}
-
-input {
-  flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: var(--glass);
-  color: var(--text);
-}
-
-button {
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: var(--primary);
-  color: white;
-  cursor: pointer;
-}
-
-/* ========================= */
-/* MOBILE */
-/* ========================= */
-
-.menu-btn {
-  display: none;
-}
-
-@media(max-width:768px){
-  .sidebar {
-    position: fixed;
-    left: -100%;
-    height: 100%;
-    z-index: 1000;
-  }
-
-  .sidebar.show {
-    left: 0;
-  }
-
-  .menu-btn {
-    display: block;
-  }
-}
-
-</style>
 </head>
-
 <body>
 
-<div class="sidebar" id="sidebar">
-  <div class="logo">⚡ rishi.ai</div>
+<div class="app">
 
-  <input class="search" placeholder="Search..." oninput="searchChats(this.value)">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">⚡ rishi.ai</div>
 
-  <button class="new-chat" onclick="newChat()">+ New Chat</button>
+    <input type="text" class="search" placeholder="Search chats..." oninput="searchChats(this.value)">
 
-  <div id="chatList"></div>
+    <button class="new-chat" onclick="newChat()">+ New Chat</button>
+
+    <div id="chatList" class="chat-list"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <header class="header">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+    </header>
+
+    <section id="messages" class="messages"></section>
+
+    <div class="input-area">
+      <input id="input" placeholder="Ask anything..." 
+        onkeydown="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()">➤</button>
+    </div>
+
+  </main>
+
 </div>
 
-<div class="main">
-
-  <div class="header">
-    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
-    <button onclick="toggleTheme()">🌓</button>
-  </div>
-
-  <div id="messages" class="messages"></div>
-
-  <div class="input-area">
-    <input id="input" placeholder="Ask anything..." onkeydown="if(event.key==='Enter') sendMessage()">
-    <button onclick="sendMessage()">➤</button>
-  </div>
-
-</div>
-
-<script>
-
-/* STATE */
-let chats = JSON.parse(localStorage.getItem('chats')) || [];
-let currentChat = [];
-let currentIndex = null;
-
-/* SAVE */
-function saveChats() {
-  localStorage.setItem('chats', JSON.stringify(chats));
-}
-
-/* SIDEBAR */
-function renderSidebar(list = chats) {
-  const container = document.getElementById('chatList');
-  container.innerHTML = '';
-
-  list.forEach((chat, i) => {
-    const div = document.createElement('div');
-    div.className = 'chat-item';
-
-    div.innerHTML = `
-      <span onclick="loadChat(${i})">${chat.name || chat[0]?.text?.slice(0,20)}</span>
-      <div class="chat-actions">
-        <span onclick="renameChat(${i})">✏️</span>
-        <span onclick="deleteChat(${i})">🗑️</span>
-      </div>
-    `;
-
-    container.appendChild(div);
-  });
-}
-
-/* SEARCH */
-function searchChats(q) {
-  const filtered = chats.filter(c => JSON.stringify(c).toLowerCase().includes(q.toLowerCase()));
-  renderSidebar(filtered);
-}
-
-/* MESSAGES */
-function renderMessages() {
-  const box = document.getElementById('messages');
-  box.innerHTML = '';
-
-  currentChat.forEach(m => {
-    const div = document.createElement('div');
-    div.className = 'message ' + m.role;
-    div.innerHTML = formatText(m.text);
-    box.appendChild(div);
-  });
-
-  box.scrollTop = box.scrollHeight;
-}
-
-/* MARKDOWN FORMAT */
-function formatText(text) {
-  return text
-    .replace(/```(.*?)```/gs, '<pre>$1</pre>')
-    .replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>');
-}
-
-/* STREAMING EFFECT */
-function typeEffect(element, text) {
-  let i = 0;
-  element.innerHTML = '';
-  let interval = setInterval(() => {
-    element.innerHTML += text[i];
-    i++;
-    if(i >= text.length) clearInterval(interval);
-  }, 10);
-}
-
-/* SEND */
-async function sendMessage() {
-  const input = document.getElementById('input');
-  const text = input.value.trim();
-  if(!text) return;
-
-  currentChat.push({role:'user', text});
-  renderMessages();
-  input.value = '';
-
-  const aiDiv = document.createElement('div');
-  aiDiv.className = 'message ai';
-  document.getElementById('messages').appendChild(aiDiv);
-
-  try {
-    const res = await fetch('/api/chat', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ message: text, history: currentChat })
-    });
-
-    const data = await res.json();
-    typeEffect(aiDiv, data.reply);
-
-    currentChat.push({role:'ai', text: data.reply});
-
-  } catch(e){
-    aiDiv.innerText = 'Error';
-  }
-
-  if(currentIndex===null){
-    chats.push(currentChat);
-    currentIndex = chats.length-1;
-  } else {
-    chats[currentIndex] = currentChat;
-  }
-
-  saveChats();
-  renderSidebar();
-}
-
-/* CHAT CONTROL */
-function newChat(){
-  currentChat = [];
-  currentIndex = null;
-  renderMessages();
-}
-
-function loadChat(i){
-  currentChat = chats[i];
-  currentIndex = i;
-  renderMessages();
-}
-
-function deleteChat(i){
-  chats.splice(i,1);
-  saveChats();
-  renderSidebar();
-}
-
-function renameChat(i){
-  const name = prompt('Rename chat');
-  if(name) chats[i].name = name;
-  saveChats();
-  renderSidebar();
-}
-
-/* UI */
-function toggleTheme(){
-  document.body.classList.toggle('light');
-}
-
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('show');
-}
-
-/* INIT */
-renderSidebar();
-
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
