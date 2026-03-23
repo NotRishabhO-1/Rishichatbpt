@@ -22,7 +22,7 @@ let voiceEnabled = false;
 if (voiceToggle) {
   voiceToggle.onclick = () => {
     voiceEnabled = !voiceEnabled;
-    voiceToggle.textContent = voiceEnabled ? "🔊 Voice: ON" : "🔊 Voice: OFF";
+    voiceToggle.textContent = voiceEnabled ? "VC: ON" : "VC: OFF";
 
     if (!voiceEnabled) speechSynthesis.cancel();
   };
