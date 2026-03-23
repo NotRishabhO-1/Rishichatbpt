@@ -246,17 +246,15 @@ async function callAPI(messages) {
 ========================= */
 async function sendMessage() {
   const text = userInput.value.trim();
-  if (!text) return;
+  if (isImagePrompt(text)) {
+  const imageUrl = generateImageUrl(text);
 
-  const chat = ensureActiveChat();
-  welcome.style.display = "none";
+  renderImage(chatContainer, imageUrl);
 
-  chat.messages.push({ role: "user", content: text });
-  chat.updatedAt = Date.now();
-
-  if (chat.messages.length === 1) {
-    chat.title = text.slice(0, 30);
-  }
+  chat.messages.push({ role: "assistant", content: imageUrl });
+  saveChats();
+  return;
+}
 
   saveChats();
   renderSidebar();
