@@ -1,50 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>rishi.ai</title>
-
-<link rel="stylesheet" href="style.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rishi AI</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-mark">R</div>
+          <div>
+            <h1>Rishi AI</h1>
+            <p>Elegant black chat experience</p>
+          </div>
+        </div>
+        <button class="icon-btn mobile-close" id="closeSidebarBtn" aria-label="Close sidebar">✕</button>
+      </div>
 
-<div class="app">
+      <button class="primary-btn new-chat-btn" id="newChatBtn">+ New chat</button>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="logo">⚡ rishi.ai</div>
+      <div class="sidebar-section">
+        <div class="section-label">Chats</div>
+        <div id="chatList" class="chat-list"></div>
+      </div>
 
-    <input type="text" class="search" placeholder="Search chats..." oninput="searchChats(this.value)">
+      <div class="sidebar-footer">
+        <span class="dot"></span>
+        <span>Ready to chat</span>
+      </div>
+    </aside>
 
-    <button class="new-chat" onclick="newChat()">+ New Chat</button>
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="openSidebarBtn" aria-label="Open sidebar">☰</button>
+        <div class="topbar-title">
+          <h2>Rishi AI</h2>
+          <p>Clean, fast, and minimal</p>
+        </div>
+        <button class="ghost-btn" id="clearAllBtn">Clear all</button>
+      </header>
 
-    <div id="chatList" class="chat-list"></div>
-  </aside>
+      <section class="chat-wrap">
+        <div id="welcome" class="welcome">
+          <div class="welcome-card">
+            <div class="welcome-badge">ChatGPT-style UI</div>
+            <h3>Ask anything with a premium black theme.</h3>
+            <p>Fast replies, smooth history, and a polished interface built for Vercel.</p>
+          </div>
+        </div>
 
-  <!-- MAIN -->
-  <main class="main">
+        <div id="chatContainer" class="chat-container" aria-live="polite"></div>
 
-    <header class="header">
-      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-      <button class="theme-btn" onclick="toggleTheme()">🌓</button>
-    </header>
+        <div id="typing" class="typing hidden" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+      </section>
 
-    <section id="messages" class="messages"></section>
+      <footer class="composer-shell">
+        <div class="composer">
+          <textarea
+            id="userInput"
+            rows="1"
+            placeholder="Message Rishi AI..."
+            spellcheck="false"
+          ></textarea>
+          <button id="sendBtn" class="send-btn" aria-label="Send message">➤</button>
+        </div>
+        <p class="composer-hint">Enter to send • Shift + Enter for a new line</p>
+      </footer>
+    </main>
+  </div>
 
-    <div class="input-area">
-      <input id="input" placeholder="Ask anything..." 
-        onkeydown="if(event.key==='Enter') sendMessage()">
-      <button onclick="sendMessage()">➤</button>
-    </div>
-
-  </main>
-
-</div>
-
-<script src="app.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
