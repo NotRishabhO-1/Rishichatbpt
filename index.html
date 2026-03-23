@@ -36,11 +36,17 @@
     <main class="main">
       <header class="topbar">
         <button class="icon-btn menu-btn" id="openSidebarBtn" aria-label="Open sidebar">☰</button>
+
         <div class="topbar-title">
           <h2>Rishi AI</h2>
           <p>Clean, fast, and minimal</p>
         </div>
-        <button class="ghost-btn" id="clearAllBtn">Clear all</button>
+
+        <!-- 🔊 NEW VOICE TOGGLE BUTTON -->
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button id="voiceToggle" class="ghost-btn">🔊 Voice: OFF</button>
+          <button class="ghost-btn" id="clearAllBtn">Clear all</button>
+        </div>
       </header>
 
       <section class="chat-wrap">
