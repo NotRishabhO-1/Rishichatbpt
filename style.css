@@ -296,24 +296,33 @@ button{cursor:pointer}
 }
 
 .message{
-  width:min(780px, 100%);
+  width: fit-content;
+  max-width: min(780px, 85%);
+  min-width: 60px;
+
   margin:0 auto;
   border-radius:24px;
   padding:18px 18px 14px;
   border:1px solid var(--stroke);
   box-shadow: var(--shadow);
   animation: fadeUp .18s ease;
-  overflow:hidden;
+
+  overflow: visible;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message.user{
   background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
   align-self:flex-end;
+  margin-left:auto;
 }
 
 .message.assistant{
   background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
   align-self:flex-start;
+  margin-right:auto;
 }
 
 .msg-head{
@@ -341,31 +350,48 @@ button{cursor:pointer}
   line-height:1.7;
   color:#f5f5f5;
   font-size:.98rem;
-  white-space:normal;
-  word-break:break-word;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* 🔥 MARKDOWN HEADINGS */
+.msg-body h1{
+  font-size:1.5rem;
+  margin:10px 0;
+  font-weight:700;
 }
 
-.msg-body p{margin:0 0 10px}
-.msg-body p:last-child{margin-bottom:0}
-.msg-body a{color:#c4b5fd}
-.msg-body strong{font-weight:700}
-.msg-body em{font-style:italic}
-.msg-body ul, .msg-body ol{margin:10px 0 10px 22px}
-.msg-body li{margin:6px 0}
-.msg-body code.inline{
-  padding:2px 6px;
-  border-radius:8px;
-  background: rgba(255,255,255,.08);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size:.92em;
+.msg-body h2{
+  font-size:1.3rem;
+  margin:8px 0;
+  font-weight:600;
 }
+
+.msg-body h3{
+  font-size:1.1rem;
+  margin:6px 0;
+  font-weight:600;
+}
+
+/* Lists improvement */
+.msg-body ul{
+  margin:10px 0 10px 20px;
+  padding-left:10px;
+}
+
+.msg-body li{
+  margin-bottom:6px;
+}
+
+/* Better code blocks */
 .msg-body pre{
-  margin:12px 0 0;
-  padding:14px;
+  margin:12px 0;
+  padding:16px;
   border-radius:16px;
-  overflow:auto;
-  background:#000;
-  border:1px solid rgba(255,255,255,.09);
+  overflow-x:auto;
+  background:#0a0a0a;
+  border:1px solid rgba(255,255,255,.1);
+}
 }
 .msg-body pre code{
   color:#e5e7eb;
