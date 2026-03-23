@@ -16,6 +16,29 @@ const ACTIVE_KEY = "rishi_ai_active_chat_v3";
 let chats = loadChats();
 let activeChatId = localStorage.getItem(ACTIVE_KEY) || null;
 
+/* =========================
+   🔥 SMART AUTO SCROLL
+========================= */
+function scrollToBottom(force = false) {
+  const threshold = 120;
+
+  const isNearBottom =
+    chatContainer.scrollHeight -
+      chatContainer.scrollTop -
+      chatContainer.clientHeight <
+    threshold;
+
+  if (isNearBottom || force) {
+    chatContainer.scrollTo({
+      top: chatContainer.scrollHeight,
+      behavior: "smooth"
+    });
+  }
+}
+
+/* =========================
+   STORAGE
+========================= */
 function loadChats() {
   try {
     const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -43,6 +66,9 @@ function getActiveChat() {
   return chats.find(c => c.id === activeChatId) || null;
 }
 
+/* =========================
+   CHAT MANAGEMENT
+========================= */
 function createChat(title = "New chat") {
   const chat = {
     id: uid(),
@@ -68,10 +94,16 @@ function ensureActiveChat() {
   return chats[0];
 }
 
+/* =========================
+   SIDEBAR
+========================= */
 function setMobileSidebar(open) {
   sidebar.classList.toggle("open", open);
 }
 
+/* =========================
+   MARKDOWN
+========================= */
 function escapeHTML(str) {
   return str
     .replace(/&/g, "&amp;")
@@ -89,8 +121,6 @@ function renderMarkdown(text) {
   html = html.replace(/`([^`\n]+)`/g, '<code class="inline">$1</code>');
   html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
-  html = html.replace(/\n- (.*?)(?=\n|$)/g, "<ul><li>$1</li></ul>");
-  html = html.replace(/\n\1\. (.*?)(?=\n|$)/g, "$1"); // harmless no-op if unmatched
   html = html.replace(/\n/g, "<br>");
 
   return html;
@@ -104,6 +134,9 @@ function normalizeLists(container) {
     .replace(/<br><br>/g, "<br>");
 }
 
+/* =========================
+   MESSAGE UI
+========================= */
 function addMessage(chat, role, content, { scroll = true } = {}) {
   const wrap = document.createElement("div");
   wrap.className = `message ${role === "user" ? "user" : "assistant"}`;
@@ -138,11 +171,13 @@ function addMessage(chat, role, content, { scroll = true } = {}) {
 
   chatContainer.appendChild(wrap);
 
-  if (scroll) {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
+  // 🔥 FIXED SCROLL
+  if (scroll) scrollToBottom(true);
 }
 
+/* =========================
+   RENDER CHAT
+========================= */
 function renderSidebar() {
   chatList.innerHTML = "";
 
@@ -175,17 +210,25 @@ function renderChat() {
     welcome.style.display = "grid";
   } else {
     welcome.style.display = "none";
-    chat.messages.forEach(msg => addMessage(chat, msg.role, msg.content, { scroll: false }));
+    chat.messages.forEach(msg =>
+      addMessage(chat, msg.role, msg.content, { scroll: false })
+    );
   }
 
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+  setTimeout(() => scrollToBottom(true), 50);
 }
 
+/* =========================
+   INPUT
+========================= */
 function autoResize() {
   userInput.style.height = "auto";
   userInput.style.height = Math.min(userInput.scrollHeight, 190) + "px";
 }
 
+/* =========================
+   API
+========================= */
 async function callAPI(messages) {
   const res = await fetch("/api/chat", {
     method: "POST",
@@ -193,20 +236,13 @@ async function callAPI(messages) {
     body: JSON.stringify({ messages })
   });
 
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(txt || "Request failed");
-  }
-
   const data = await res.json();
   return data.reply || "No response returned.";
 }
 
-function getTitleFromText(text) {
-  const cleaned = text.trim().replace(/\s+/g, " ");
-  return cleaned.length > 34 ? cleaned.slice(0, 34) + "…" : cleaned || "New chat";
-}
-
+/* =========================
+   SEND MESSAGE
+========================= */
 async function sendMessage() {
   const text = userInput.value.trim();
   if (!text) return;
@@ -218,7 +254,7 @@ async function sendMessage() {
   chat.updatedAt = Date.now();
 
   if (chat.messages.length === 1) {
-    chat.title = getTitleFromText(text);
+    chat.title = text.slice(0, 30);
   }
 
   saveChats();
@@ -228,41 +264,50 @@ async function sendMessage() {
   userInput.value = "";
   autoResize();
 
+  // 🔥 typing scroll fix
   typing.classList.remove("hidden");
+  scrollToBottom(true);
 
   try {
-    const reply = await callAPI(
-      chat.messages.map(m => ({ role: m.role, content: m.content }))
-    );
+    const reply = await callAPI(chat.messages);
 
     typing.classList.add("hidden");
 
     chat.messages.push({ role: "assistant", content: reply });
     chat.updatedAt = Date.now();
+
     saveChats();
     renderSidebar();
     addMessage(chat, "assistant", reply);
+
+    setTimeout(() => scrollToBottom(true), 100);
+
   } catch (err) {
     typing.classList.add("hidden");
-    const errorText = "Connection failed. Check your Vercel environment variables and API route.";
+
+    const errorText = "⚠️ Error connecting to AI.";
     chat.messages.push({ role: "assistant", content: errorText });
-    chat.updatedAt = Date.now();
+
     saveChats();
     renderSidebar();
     addMessage(chat, "assistant", errorText);
+
     console.error(err);
   }
 }
 
-function clearAllChats() {
-  chats = [];
-  activeChatId = null;
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(ACTIVE_KEY);
-  createChat();
-  renderSidebar();
-  renderChat();
-}
+/* =========================
+   EVENTS
+========================= */
+sendBtn.onclick = sendMessage;
+
+userInput.addEventListener("input", autoResize);
+userInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
 
 newChatBtn.onclick = () => {
   createChat();
@@ -271,39 +316,32 @@ newChatBtn.onclick = () => {
   setMobileSidebar(false);
 };
 
-clearAllBtn.onclick = clearAllChats;
-sendBtn.onclick = sendMessage;
-
-userInput.addEventListener("input", autoResize);
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
+clearAllBtn.onclick = () => {
+  chats = [];
+  localStorage.clear();
+  createChat();
+};
 
 openSidebarBtn.onclick = () => setMobileSidebar(true);
 closeSidebarBtn.onclick = () => setMobileSidebar(false);
 
 document.addEventListener("click", (e) => {
   if (window.innerWidth <= 920) {
-    const clickedInsideSidebar = sidebar.contains(e.target);
-    const clickedMenu = openSidebarBtn.contains(e.target);
-    if (!clickedInsideSidebar && !clickedMenu) {
+    if (!sidebar.contains(e.target) && !openSidebarBtn.contains(e.target)) {
       setMobileSidebar(false);
     }
   }
 });
 
+/* =========================
+   INIT
+========================= */
 function init() {
   if (!chats.length) {
     const first = createChat();
     activeChatId = first.id;
-  } else if (!activeChatId || !chats.some(c => c.id === activeChatId)) {
-    activeChatId = chats[0].id;
   }
 
-  saveChats();
   renderSidebar();
   renderChat();
   autoResize();
