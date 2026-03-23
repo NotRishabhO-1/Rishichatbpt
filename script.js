@@ -1,4 +1,5 @@
 import { isImagePrompt, generateImageUrl, renderImage } from "./image.js";
+
 const sidebar = document.getElementById("sidebar");
 const openSidebarBtn = document.getElementById("openSidebarBtn");
 const closeSidebarBtn = document.getElementById("closeSidebarBtn");
@@ -11,6 +12,46 @@ const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const welcome = document.getElementById("welcome");
 
+/* =========================
+   🔊 VOICE SYSTEM
+========================= */
+const voiceToggle = document.getElementById("voiceToggle");
+let voiceEnabled = false;
+
+// Toggle voice
+if (voiceToggle) {
+  voiceToggle.onclick = () => {
+    voiceEnabled = !voiceEnabled;
+    voiceToggle.textContent = voiceEnabled ? "🔊 Voice: ON" : "🔊 Voice: OFF";
+
+    if (!voiceEnabled) speechSynthesis.cancel();
+  };
+}
+
+// Speak function
+function speakText(text) {
+  if (!voiceEnabled) return;
+
+  speechSynthesis.cancel();
+
+  const cleanText = text.replace(/```[\s\S]*?```/g, ""); // remove code blocks
+
+  const speech = new SpeechSynthesisUtterance(cleanText);
+  speech.lang = "en-US";
+  speech.rate = 1;
+  speech.pitch = 1;
+
+  // Better voice (if available)
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.name.includes("Google"));
+  if (preferred) speech.voice = preferred;
+
+  speechSynthesis.speak(speech);
+}
+
+/* =========================
+   STORAGE
+========================= */
 const STORAGE_KEY = "rishi_ai_chats_v3";
 const ACTIVE_KEY = "rishi_ai_active_chat_v3";
 
@@ -38,7 +79,7 @@ function scrollToBottom(force = false) {
 }
 
 /* =========================
-   STORAGE
+   STORAGE FUNCTIONS
 ========================= */
 function loadChats() {
   try {
@@ -172,12 +213,11 @@ function addMessage(chat, role, content, { scroll = true } = {}) {
 
   chatContainer.appendChild(wrap);
 
-  // 🔥 FIXED SCROLL
   if (scroll) scrollToBottom(true);
 }
 
 /* =========================
-   RENDER CHAT
+   RENDER
 ========================= */
 function renderSidebar() {
   chatList.innerHTML = "";
@@ -246,16 +286,20 @@ async function callAPI(messages) {
 ========================= */
 async function sendMessage() {
   const text = userInput.value.trim();
+  if (!text) return;
+
+  const chat = ensureActiveChat();
+
+  // IMAGE MODE
   if (isImagePrompt(text)) {
-  const imageUrl = generateImageUrl(text);
+    const imageUrl = generateImageUrl(text);
+    renderImage(chatContainer, imageUrl);
+    chat.messages.push({ role: "assistant", content: imageUrl });
+    saveChats();
+    return;
+  }
 
-  renderImage(chatContainer, imageUrl);
-
-  chat.messages.push({ role: "assistant", content: imageUrl });
-  saveChats();
-  return;
-}
-
+  chat.messages.push({ role: "user", content: text });
   saveChats();
   renderSidebar();
   addMessage(chat, "user", text);
@@ -263,7 +307,6 @@ async function sendMessage() {
   userInput.value = "";
   autoResize();
 
-  // 🔥 typing scroll fix
   typing.classList.remove("hidden");
   scrollToBottom(true);
 
@@ -278,6 +321,9 @@ async function sendMessage() {
     saveChats();
     renderSidebar();
     addMessage(chat, "assistant", reply);
+
+    // 🔊 SPEAK RESPONSE
+    speakText(reply);
 
     setTimeout(() => scrollToBottom(true), 100);
 
