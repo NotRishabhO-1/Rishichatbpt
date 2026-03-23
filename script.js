@@ -13,40 +13,38 @@ const sendBtn = document.getElementById("sendBtn");
 const welcome = document.getElementById("welcome");
 
 /* =========================
-   🔊 VOICE SYSTEM
+   🔊 FIX HINDI VOICE SUPPORT
 ========================= */
-const voiceToggle = document.getElementById("voiceToggle");
-let voiceEnabled = false;
 
-// Toggle voice
-if (voiceToggle) {
-  voiceToggle.onclick = () => {
-    voiceEnabled = !voiceEnabled;
-    voiceToggle.textContent = voiceEnabled ? "VC: ON" : "VC: OFF";
+speechSynthesis.onvoiceschanged = () => {
+  speechSynthesis.getVoices();
+};
 
-    if (!voiceEnabled) speechSynthesis.cancel();
-  };
-}
-
-// Speak function
 function speakText(text) {
-  if (!voiceEnabled) return;
+  if (!("speechSynthesis" in window)) return;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  const voices = speechSynthesis.getVoices();
+
+  // Detect Hindi vs English
+  const isHindi = /[\u0900-\u097F]/.test(text);
+
+  let voice;
+
+  if (isHindi) {
+    voice = voices.find(v => v.lang === "hi-IN");
+  } else {
+    voice = voices.find(v => v.lang === "en-US");
+  }
+
+  // fallback
+  utterance.voice = voice || voices[0];
+
+  utterance.rate = 1;
+  utterance.pitch = 1;
 
   speechSynthesis.cancel();
-
-  const cleanText = text.replace(/```[\s\S]*?```/g, ""); // remove code blocks
-
-  const speech = new SpeechSynthesisUtterance(cleanText);
-  speech.lang = "en-US";
-  speech.rate = 1;
-  speech.pitch = 1;
-
-  // Better voice (if available)
-  const voices = speechSynthesis.getVoices();
-  const preferred = voices.find(v => v.name.includes("Google"));
-  if (preferred) speech.voice = preferred;
-
-  speechSynthesis.speak(speech);
+  speechSynthesis.speak(utterance);
 }
 
 /* =========================
