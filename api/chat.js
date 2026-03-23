@@ -16,43 +16,25 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
     }
 
-    // 🔥 Convert chat history into Gemini format
-    const conversation = messages
-      .map(msg => {
-        if (msg.role === "user") return `User: ${msg.content}`;
-        if (msg.role === "assistant") return `AI: ${msg.content}`;
-        return "";
-      })
-      .join("\n");
+    // 🔥 Convert chat → Gemini format
+    const contents = messages.map(msg => ({
+      role: msg.role === "user" ? "user" : "model",
+      parts: [{ text: msg.content }]
+    }));
 
-    // 🧠 System prompt (your AI personality)
-    const systemPrompt = `
-You are Rishi AI, a sleek, elegant, and highly intelligent assistant.
-- Be clear, helpful, and slightly premium in tone.
-- Use clean formatting (paragraphs, lists, code blocks when needed).
-- Keep responses concise unless asked for detail.
-`;
-
-    const fullPrompt = systemPrompt + "\n\n" + conversation + "\nAI:";
-
-    // 🚀 Gemini API call
+    // 🚀 Call Gemini 3 Flash Preview
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: fullPrompt }]
-            }
-          ],
+          contents,
           generationConfig: {
             temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
+            topP: 0.9,
             maxOutputTokens: 1500
           }
         })
@@ -61,30 +43,39 @@ You are Rishi AI, a sleek, elegant, and highly intelligent assistant.
 
     const data = await response.json();
 
-    // 🧾 Extract response safely
-    let reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    console.log("Gemini RAW:", JSON.stringify(data, null, 2));
 
-    // ❌ Handle blocked / empty responses
-    if (!reply) {
-      if (data?.promptFeedback?.blockReason) {
-        reply = "⚠️ Response blocked due to safety filters.";
-      } else {
-        reply = "⚠️ No response generated. Try again.";
-      }
+    // ✅ Safe extraction (new structure)
+    let reply = "";
+
+    if (
+      data.candidates &&
+      data.candidates.length > 0 &&
+      data.candidates[0].content &&
+      data.candidates[0].content.parts
+    ) {
+      reply = data.candidates[0].content.parts
+        .map(p => p.text || "")
+        .join("");
     }
 
-    // ✨ Clean response
-    reply = reply.trim();
+    // ❌ Handle no output
+    if (!reply) {
+      if (data.promptFeedback?.blockReason) {
+        reply = "⚠️ Blocked by safety filters.";
+      } else {
+        reply = "⚠️ No response generated. Check quota or API key.";
+      }
+    }
 
     return res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Gemini Error:", error);
 
     return res.status(500).json({
       error: "Server error",
-      details: error.message || "Unknown error"
+      details: error.message
     });
   }
 }
