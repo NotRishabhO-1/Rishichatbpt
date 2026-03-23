@@ -1,3 +1,4 @@
+import { isImagePrompt, generateImageUrl, renderImage } from "./image.js";
 const sidebar = document.getElementById("sidebar");
 const openSidebarBtn = document.getElementById("openSidebarBtn");
 const closeSidebarBtn = document.getElementById("closeSidebarBtn");
