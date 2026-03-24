@@ -296,23 +296,19 @@ gap:18px;
 }
 
 .message{
-width: fit-content;
-max-width: min(780px, 85%);
-min-width: 60px;
+  width: fit-content;
+  max-width: 85%;
+  min-width: 60px;
 
-margin:0 auto;
-border-radius:24px;
-padding:18px 18px 14px;
-border:1px solid var(--stroke);
-box-shadow: var(--shadow);
-animation: fadeUp .18s ease;
+  margin:0;
+  border-radius:24px;
+  padding:18px 18px 14px;
+  border:1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  animation: fadeUp .18s ease;
 
-overflow: visible;
-word-wrap: break-word;
-overflow-wrap: break-word;
-white-space: pre-wrap;
+  word-break: break-word;
 }
-
 .message.user{
 background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
 align-self:flex-end;
@@ -519,4 +515,26 @@ box-shadow: var(--shadow);
 .composer{padding:10px}
 .welcome-card{padding:22px}
 .welcome-card h3{font-size:1.6rem}
+}
+
+
+/* =========================
+   🔥 FIX OVERLAP ISSUE
+========================= */
+
+.welcome{
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.welcome.hidden{
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+}
+
+/* chat should always be above */
+.chat-container{
+  position: relative;
+  z-index: 2;
 }
