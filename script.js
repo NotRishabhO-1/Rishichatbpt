@@ -288,10 +288,9 @@ async function sendMessage() {
   const text = userInput.value.trim();
   if (!text) return;
 
-  // ✅ ALWAYS ensure chat exists
   const chat = ensureActiveChat();
 
-  // ✅ hide welcome screen
+  // hide welcome
   welcome.style.display = "none";
 
   /* =========================
@@ -328,14 +327,11 @@ async function sendMessage() {
   saveChats();
   renderSidebar();
 
-  // show user message
   addMessage(chat, "user", text);
 
-  // clear input
   userInput.value = "";
   autoResize();
 
-  // show typing
   typing.classList.remove("hidden");
   scrollToBottom(true);
 
@@ -351,8 +347,10 @@ async function sendMessage() {
     saveChats();
     renderSidebar();
 
-    // show AI message
     addMessage(chat, "assistant", reply);
+
+    // 🔊 SPEAK RESPONSE (FIXED POSITION)
+    speakText(reply);
 
     scrollToBottom(true);
 
@@ -365,24 +363,6 @@ async function sendMessage() {
     saveChats();
     renderSidebar();
 
-    addMessage(chat, "assistant", errorText);
-
-    console.error(err);
-  }
-}
-    // 🔊 SPEAK RESPONSE
-    speakText(reply);
-
-    setTimeout(() => scrollToBottom(true), 100);
-
-  } catch (err) {
-    typing.classList.add("hidden");
-
-    const errorText = "⚠️ Error connecting to AI.";
-    chat.messages.push({ role: "assistant", content: errorText });
-
-    saveChats();
-    renderSidebar();
     addMessage(chat, "assistant", errorText);
 
     console.error(err);
