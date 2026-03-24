@@ -288,25 +288,54 @@ async function sendMessage() {
   const text = userInput.value.trim();
   if (!text) return;
 
+  // ✅ ALWAYS ensure chat exists
   const chat = ensureActiveChat();
 
-  // IMAGE MODE
+  // ✅ hide welcome screen
+  welcome.style.display = "none";
+
+  /* =========================
+     🎨 IMAGE MODE
+  ========================= */
   if (isImagePrompt(text)) {
     const imageUrl = generateImageUrl(text);
+
+    addMessage(chat, "user", text);
     renderImage(chatContainer, imageUrl);
+
     chat.messages.push({ role: "assistant", content: imageUrl });
+    chat.updatedAt = Date.now();
+
     saveChats();
+    renderSidebar();
+    scrollToBottom(true);
     return;
   }
 
+  /* =========================
+     💬 NORMAL MESSAGE
+  ========================= */
+
+  // add user message
   chat.messages.push({ role: "user", content: text });
+  chat.updatedAt = Date.now();
+
+  // auto title
+  if (chat.messages.length === 1) {
+    chat.title = text.slice(0, 30);
+  }
+
   saveChats();
   renderSidebar();
+
+  // show user message
   addMessage(chat, "user", text);
 
+  // clear input
   userInput.value = "";
   autoResize();
 
+  // show typing
   typing.classList.remove("hidden");
   scrollToBottom(true);
 
@@ -315,13 +344,32 @@ async function sendMessage() {
 
     typing.classList.add("hidden");
 
+    // save AI reply
     chat.messages.push({ role: "assistant", content: reply });
     chat.updatedAt = Date.now();
 
     saveChats();
     renderSidebar();
+
+    // show AI message
     addMessage(chat, "assistant", reply);
 
+    scrollToBottom(true);
+
+  } catch (err) {
+    typing.classList.add("hidden");
+
+    const errorText = "⚠️ Error connecting to AI.";
+    chat.messages.push({ role: "assistant", content: errorText });
+
+    saveChats();
+    renderSidebar();
+
+    addMessage(chat, "assistant", errorText);
+
+    console.error(err);
+  }
+}
     // 🔊 SPEAK RESPONSE
     speakText(reply);
 
