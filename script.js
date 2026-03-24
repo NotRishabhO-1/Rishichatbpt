@@ -18,33 +18,25 @@ const welcome = document.getElementById("welcome");
 const voiceToggle = document.getElementById("voiceToggle");
 let voiceEnabled = false;
 
-// Toggle voice
 if (voiceToggle) {
   voiceToggle.onclick = () => {
     voiceEnabled = !voiceEnabled;
-    voiceToggle.textContent = voiceEnabled ? "🔊 Voice: ON" : "🔊 Voice: OFF";
-
+    voiceToggle.textContent = voiceEnabled ? "VC:ON" : "VC:OFF";
     if (!voiceEnabled) speechSynthesis.cancel();
   };
 }
 
-// Speak function
 function speakText(text) {
   if (!voiceEnabled) return;
 
   speechSynthesis.cancel();
 
-  const cleanText = text.replace(/```[\s\S]*?```/g, ""); // remove code blocks
-
+  const cleanText = text.replace(/```[\s\S]*?```/g, "");
   const speech = new SpeechSynthesisUtterance(cleanText);
+
   speech.lang = "en-US";
   speech.rate = 1;
   speech.pitch = 1;
-
-  // Better voice (if available)
-  const voices = speechSynthesis.getVoices();
-  const preferred = voices.find(v => v.name.includes("Google"));
-  if (preferred) speech.voice = preferred;
 
   speechSynthesis.speak(speech);
 }
@@ -59,7 +51,18 @@ let chats = loadChats();
 let activeChatId = localStorage.getItem(ACTIVE_KEY) || null;
 
 /* =========================
-   🔥 SMART AUTO SCROLL
+   FIX: HIDE WELCOME
+========================= */
+function hideWelcome() {
+  if (welcome) welcome.classList.add("hidden");
+}
+
+function showWelcome() {
+  if (welcome) welcome.classList.remove("hidden");
+}
+
+/* =========================
+   SCROLL
 ========================= */
 function scrollToBottom(force = false) {
   const threshold = 120;
@@ -119,11 +122,14 @@ function createChat(title = "New chat") {
     updatedAt: Date.now(),
     messages: []
   };
+
   chats.unshift(chat);
   activeChatId = chat.id;
+
   saveChats();
   renderSidebar();
   renderChat();
+
   return chat;
 }
 
@@ -131,8 +137,10 @@ function ensureActiveChat() {
   if (!chats.length) return createChat();
   const existing = getActiveChat();
   if (existing) return existing;
+
   activeChatId = chats[0].id;
   saveChats();
+
   return chats[0];
 }
 
@@ -195,17 +203,20 @@ function addMessage(chat, role, content, { scroll = true } = {}) {
     const copyBtn = document.createElement("button");
     copyBtn.className = "copy-btn";
     copyBtn.textContent = "Copy";
+
     copyBtn.onclick = async () => {
       await navigator.clipboard.writeText(content);
       copyBtn.textContent = "Copied";
       setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
     };
+
     head.appendChild(copyBtn);
   }
 
   const body = document.createElement("div");
   body.className = "msg-body";
   body.innerHTML = renderMarkdown(content);
+
   normalizeLists(body);
 
   wrap.appendChild(head);
@@ -224,7 +235,9 @@ function renderSidebar() {
 
   chats.forEach(chat => {
     const item = document.createElement("button");
+
     item.className = "chat-item" + (chat.id === activeChatId ? " active" : "");
+
     item.innerHTML = `
       <div class="chat-item-title">${escapeHTML(chat.title || "New chat")}</div>
       <div class="chat-item-meta">
@@ -232,6 +245,7 @@ function renderSidebar() {
         <span>${nowLabel(chat.updatedAt)}</span>
       </div>
     `;
+
     item.onclick = () => {
       activeChatId = chat.id;
       saveChats();
@@ -239,21 +253,24 @@ function renderSidebar() {
       renderChat();
       setMobileSidebar(false);
     };
+
     chatList.appendChild(item);
   });
 }
 
 function renderChat() {
   const chat = ensureActiveChat();
+
   chatContainer.innerHTML = "";
 
   if (!chat.messages.length) {
-    welcome.style.display = "grid";
+    showWelcome();
   } else {
-    welcome.style.display = "none";
-    chat.messages.forEach(msg =>
-      addMessage(chat, msg.role, msg.content, { scroll: false })
-    );
+    hideWelcome();
+
+    chat.messages.forEach(msg => {
+      addMessage(chat, msg.role, msg.content, { scroll: false });
+    });
   }
 
   setTimeout(() => scrollToBottom(true), 50);
@@ -290,12 +307,9 @@ async function sendMessage() {
 
   const chat = ensureActiveChat();
 
-  // hide welcome
-  welcome.style.display = "none";
+  hideWelcome();
 
-  /* =========================
-     🎨 IMAGE MODE
-  ========================= */
+  /* IMAGE MODE */
   if (isImagePrompt(text)) {
     const imageUrl = generateImageUrl(text);
 
@@ -307,19 +321,15 @@ async function sendMessage() {
 
     saveChats();
     renderSidebar();
+
     scrollToBottom(true);
     return;
   }
 
-  /* =========================
-     💬 NORMAL MESSAGE
-  ========================= */
-
-  // add user message
+  /* NORMAL MESSAGE */
   chat.messages.push({ role: "user", content: text });
   chat.updatedAt = Date.now();
 
-  // auto title
   if (chat.messages.length === 1) {
     chat.title = text.slice(0, 30);
   }
@@ -340,7 +350,6 @@ async function sendMessage() {
 
     typing.classList.add("hidden");
 
-    // save AI reply
     chat.messages.push({ role: "assistant", content: reply });
     chat.updatedAt = Date.now();
 
@@ -349,7 +358,6 @@ async function sendMessage() {
 
     addMessage(chat, "assistant", reply);
 
-    // 🔊 SPEAK RESPONSE (FIXED POSITION)
     speakText(reply);
 
     scrollToBottom(true);
@@ -384,8 +392,6 @@ userInput.addEventListener("keydown", e => {
 
 newChatBtn.onclick = () => {
   createChat();
-  renderSidebar();
-  renderChat();
   setMobileSidebar(false);
 };
 
